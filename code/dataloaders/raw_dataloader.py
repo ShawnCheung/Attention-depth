@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import torch
 
-iheight, iwidth = 480, 640 # raw image size
+iheight, iwidth = 1200, 1920 # raw image size
 
 def make_dataset(root, txt):
     with open(txt, 'r') as f:
@@ -26,14 +26,14 @@ def make_dataset(root, txt):
             List.append(os.path.join(root, line.strip('\n')))
     return List
 
-class NYUDataset(MyDataloader):
+class RAWDataset(MyDataloader):
     def __init__(self, root_image, root_depth, 
                  image_txt, depth_txt, mode='train',
                  min_depth=None, max_depth=None,
                  flip=False, rotate=False, scale=False, jitter=False, crop=False,
                  make=make_dataset):
-        super(NYUDataset, self).__init__(root_image, root_depth, image_txt, depth_txt, mode, min_depth, max_depth, make)
-        self.input_size = (224, 304)
+        super(RAWDataset, self).__init__(root_image, root_depth, image_txt, depth_txt, mode, min_depth, max_depth, make)
+        self.input_size = (1200, 1920)
         self.flip = flip
         self.rotate = rotate
         self.scale = scale
@@ -41,7 +41,7 @@ class NYUDataset(MyDataloader):
         self.crop = crop
 
     def train_transform(self, rgb, depth):
-        t = [Resize(240.0 / iheight)] # this is for computational efficiency, since rotation can be slow
+        t = [Resize(1200 / iheight)] # this is for computational efficiency, since rotation can be slow
         if self.rotate:
             angle = np.random.uniform(-5.0, 5.0) # random rotation degrees
             t.append(Rotate(angle))
@@ -68,7 +68,7 @@ class NYUDataset(MyDataloader):
         return rgb_np, depth_np
 
     def val_transform(self, rgb, depth):
-        transform = Compose([Resize(240.0 / iheight),
+        transform = Compose([Resize(1200 / iheight),
                              CenterCrop(self.input_size),
                             ])
         rgb_np = transform(rgb)
@@ -78,26 +78,26 @@ class NYUDataset(MyDataloader):
 
 if __name__ == '__main__':
     HOME = os.environ['HOME']
-    rgbdir = HOME + '/myDataset/NYU_v2/'
-    depdir = HOME + '/myDataset/NYU_v2/'
-    trainrgb = '../datasets/nyu_path/train_rgb_12k.txt'
-    traindep = '../datasets/nyu_path/train_depth_12k.txt'
-    valrgb = '../datasets/nyu_path/valid_rgb.txt'
-    valdep = '../datasets/nyu_path/valid_depth.txt'
+    rgbdir = "/home/shawn/disk/GraduateProject/RAW/"
+    depdir ="/home/shawn/disk/GraduateProject/RAW/"
+    trainrgb = '../datasets/raw_path/train_rgb.txt'
+    traindep = '../datasets/raw_path/train_depth.txt'
+    valrgb = '../datasets/raw_path/valid_rgb.txt'
+    valdep = '../datasets/raw_path/valid_depth.txt'
 
-    kwargs = {'min_depth': 0.72, 'max_depth': 10.0,
+    kwargs = {'min_depth': 237.0, 'max_depth': 700.0,
               'flip': True, 'scale': True,
               'rotate': True, 'jitter': True, 'crop': True}
 
-    train_dataset = NYUDataset(rgbdir, depdir, trainrgb, traindep, mode='train', **kwargs)
-    val_dataset = NYUDataset(rgbdir, depdir, valrgb, valdep, mode='val', **kwargs)
+    train_dataset = RAWDataset(rgbdir, depdir, trainrgb, traindep, mode='train', **kwargs)
+    val_dataset = RAWDataset(rgbdir, depdir, valrgb, valdep, mode='val', **kwargs)
     trainloader = DataLoader(train_dataset, 20,
                             shuffle=True, num_workers=4, 
                             pin_memory=True, drop_last=False)
     valloader = DataLoader(val_dataset, 20,
                             shuffle=True, num_workers=4, 
                             pin_memory=True, drop_last=False)
-    image, label = train_dataset[2000]
+    image, label = train_dataset[800]
     image_npy = image.numpy().transpose(1, 2, 0)
     label_npy = label.numpy().squeeze()
     #trainloader = iter(trainloader)

@@ -22,6 +22,9 @@ def img_loader(path, is_rgb=True):
         img = np.float32(img) / 256
     return img
 
+def npy_loader(path):
+    return np.load(path)/700
+
 # def rgb2grayscale(rgb):
 #     return rgb[:,:,0] * 0.2989 + rgb[:,:,1] * 0.587 + rgb[:,:,2] * 0.114
 
@@ -64,7 +67,10 @@ class MyDataloader(data.Dataset):
             tuple: (rgb, depth) the raw data.
         """
         rgb = self.loader(self.images[index], True)
-        depth = self.loader(self.depths[index], False)
+        if self.depths[index].endswith(".npy"):
+            depth = npy_loader(self.depths[index])
+        else:
+            depth = self.loader(self.depths[index], False)
         return rgb, depth
 
     def __getitem__(self, index):

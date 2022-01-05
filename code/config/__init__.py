@@ -23,7 +23,7 @@ class Parameters():
         inference_type = ['hard', 'soft']
         opt_names = ['sgd', 'adam', 'adagrad', 'amsgrad', 'adabound', 'amsbound']
         sch_names = ['step', 'poly', 'plateau', 'constant', 'cosine']
-        dataset_names = ['nyu', 'kitti']
+        dataset_names = ['nyu', 'kitti', 'raw']
 
         parser = argparse.ArgumentParser(description='ACAN Pytorch Implementation.')
         
@@ -166,4 +166,7 @@ class Parameters():
         elif args.dataset == 'kitti':
             args.min_depth, args.max_depth = 1.98, 80.0 # 1.97
             args.height, args.width = 160, 640
+        elif args.dataset == 'raw':
+            args.min_depth, args.max_depth = 237.0, 700.0 # 1.97
+            args.height, args.width = 1200, 1920
         return args
