@@ -168,5 +168,6 @@ class Parameters():
             args.height, args.width = 160, 640
         elif args.dataset == 'raw':
             args.min_depth, args.max_depth = 237.0, 700.0 # 1.97
-            args.height, args.width = 1200, 1920
+            # args.height, args.width = 1200, 1920
+            args.height, args.width = 400, 640
         return args

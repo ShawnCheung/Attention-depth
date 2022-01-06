@@ -214,22 +214,28 @@ class ResNet(BaseClassificationModel_):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.relu1(self.bn1(self.conv1(x)))
-        x = self.maxpool(x)
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
+        temp = x
+        x = self.relu1(self.bn1(self.conv1(x))) #[1, 64, 200, 320]
+        if torch.isnan(x).sum()!=0:
+            import pdb;pdb.set_trace()
+        x = self.maxpool(x)  #[1, 64, 100, 160]
+        x = self.layer1(x) #[1, 256, 100, 160]
+        x = self.layer2(x) #[1, 512, 50, 80]
+        x = self.layer3(x) #[1, 1024, 50, 80]
+        
         inter_y = None
         if self.use_inter:
             inter_y = self.interout(x)
-        x = self.layer4(x)
+        x = self.layer4(x)  #[1, 2048, 50, 80]
         if self.decoderType == 'attention':
-            x, sim_map = self.decoder(x)
-        y = self.classifier(x)
+            x, sim_map = self.decoder(x) #[1, 2048, 50, 80], [1, 4000, 4000]
+        y = self.classifier(x) #[1, 160, 400, 640]
+
         if self.classifierType == 'OR':
             y = self.decode_ord(y)
             if self.use_inter:
                 inter_y = self.decode_ord(inter_y)
+        
         return {'inter_y': inter_y, 'sim_map': sim_map, 'y': y}
 
     class LossFunc(nn.Module):
@@ -259,6 +265,7 @@ class ResNet(BaseClassificationModel_):
             y = preds['y']
             dis_label = continuous2discrete(label, self.min_depth, self.max_depth, self.num_classes)
             # image loss
+            
             loss1 = self.AppearanceLoss(y, dis_label.squeeze(1).long())
             # intermediate supervision loss
             loss2 = 0

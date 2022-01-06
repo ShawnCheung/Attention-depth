@@ -22,8 +22,13 @@ def img_loader(path, is_rgb=True):
         img = np.float32(img) / 256
     return img
 
-def npy_loader(path):
-    return np.load(path)/700
+def img_npy_loader(path, is_img=True):
+    if is_img:
+        img = np.array(Image.open(path).convert('RGB'))
+    else:
+        img = np.load(path)
+    return img
+
 
 # def rgb2grayscale(rgb):
 #     return rgb[:,:,0] * 0.2989 + rgb[:,:,1] * 0.587 + rgb[:,:,2] * 0.114
@@ -35,7 +40,7 @@ class MyDataloader(data.Dataset):
     def __init__(self, root_image, root_depth, 
                        image_txt, depth_txt, 
                        mode, min_depth, max_depth,
-                       make, loader=img_loader):
+                       make, loader=img_npy_loader):
         self.min_depth = min_depth
         self.max_depth = max_depth
         root_image = os.path.expanduser(root_image)
@@ -52,7 +57,10 @@ class MyDataloader(data.Dataset):
             raise (RuntimeError("Invalid dataset type: " + mode + "\n"
                                 "Supported dataset types are: train, eval, test"))
         self.loader = loader
-
+    
+    # def npy_loader(path):
+    #     return np.load(path)
+    
     def train_transform(self, rgb, depth):
         raise (RuntimeError("train_transform() is not implemented. "))
 
@@ -67,10 +75,13 @@ class MyDataloader(data.Dataset):
             tuple: (rgb, depth) the raw data.
         """
         rgb = self.loader(self.images[index], True)
-        if self.depths[index].endswith(".npy"):
-            depth = npy_loader(self.depths[index])
-        else:
-            depth = self.loader(self.depths[index], False)
+        # if self.depths[index].endswith(".npy"):
+        #     print("self.depths[index]", self.depths[index])
+        #     depth = self.npy_loader(self.depths[index])
+        #     print("depth", depth)
+        #     import pdb;pdb.set_trace()
+        # else:
+        depth = self.loader(self.depths[index], False)
         return rgb, depth
 
     def __getitem__(self, index):

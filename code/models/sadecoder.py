@@ -82,6 +82,7 @@ class SelfAttentionBlock_(PixelAttentionBlock_):
         if self.scale > 1:
             x = self.pool(x)
         sim_map = self.forward_att(x)
+
         value = self.f_value(x).view(batch_size, self.value_channels, -1).permute(0, 2, 1)
         context = torch.matmul(sim_map, value).permute(0, 2, 1).contiguous()
         context = context.view(batch_size, self.value_channels, h, w)

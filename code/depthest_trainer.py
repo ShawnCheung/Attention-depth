@@ -91,6 +91,8 @@ class DepthEstimationTrainer(Trainer):
         for epoch in range(self.start_epoch, self.max_epochs + 1):
             # Train one epoch
             total_loss = self.train_epoch(epoch)
+            import pdb;pdb.set_trace()
+
             torch.cuda.empty_cache()
             # Decay Learning Rate
             if self.params.scheduler in ['step', 'plateau']:
@@ -124,6 +126,7 @@ class DepthEstimationTrainer(Trainer):
             self.optimizer.zero_grad()
             output = self.net(images)
             loss1, loss2, loss3, total_loss = self.criterion(output, labels, epoch)
+
             total_loss.backward()
             self.optimizer.step()
             fps = images.shape[0] / (time.time() - before_op_time)

@@ -165,6 +165,7 @@ class Trainer(object):
         prefetcher = DataPrefetcher(self.trainloader)
         image, label = prefetcher.next()
         step = 0
+
         while image is not None:
             image, label = data[0].to(device), data[1].to(device)
             before_op_time = time.time()

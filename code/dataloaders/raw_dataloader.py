@@ -26,12 +26,19 @@ def make_dataset(root, txt):
             List.append(os.path.join(root, line.strip('\n')))
     return List
 
+def img_npy_loader(path, is_img=True):
+    if is_img:
+        img = np.array(Image.open(path).convert('RGB'))
+    else:
+        img = np.load(path)
+    return img
+
 class RAWDataset(MyDataloader):
     def __init__(self, root_image, root_depth, 
                  image_txt, depth_txt, mode='train',
                  min_depth=None, max_depth=None,
                  flip=False, rotate=False, scale=False, jitter=False, crop=False,
-                 make=make_dataset):
+                 make=make_dataset, loader=img_npy_loader):
         super(RAWDataset, self).__init__(root_image, root_depth, image_txt, depth_txt, mode, min_depth, max_depth, make)
         self.input_size = (1200, 1920)
         self.flip = flip
@@ -41,7 +48,7 @@ class RAWDataset(MyDataloader):
         self.crop = crop
 
     def train_transform(self, rgb, depth):
-        t = [Resize(1200 / iheight)] # this is for computational efficiency, since rotation can be slow
+        t = [Resize(400 / iheight)] # this is for computational efficiency, since rotation can be slow
         if self.rotate:
             angle = np.random.uniform(-5.0, 5.0) # random rotation degrees
             t.append(Rotate(angle))
@@ -68,7 +75,7 @@ class RAWDataset(MyDataloader):
         return rgb_np, depth_np
 
     def val_transform(self, rgb, depth):
-        transform = Compose([Resize(1200 / iheight),
+        transform = Compose([Resize(400 / iheight),
                              CenterCrop(self.input_size),
                             ])
         rgb_np = transform(rgb)

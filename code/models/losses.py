@@ -141,6 +141,8 @@ class _BaseEntropyLoss2d(nn.Module):
             loss = torch.sum(weighted_entropy, -1)[mask].mean()
         elif self.reduction == 'mean':
             loss = torch.mean(weighted_entropy, -1)[mask].mean()
+        print(loss)
+        
         return loss
 
 
@@ -150,11 +152,16 @@ class OrdinalRegression2d(_BaseEntropyLoss2d):
 
     def get_entropy(self, pred, label):
         n, c, h, w = pred.size()
+
         label = label.unsqueeze(3).long()
         pred = pred.permute(0, 2, 3, 1)
+        mask = torch.zeros_like(label)
+        mask[torch.where(label!=0)] = 1
         mask10 = ((torch.arange(c)).cuda() <  label).float()
-        mask01 = ((torch.arange(c)).cuda() >= label).float()
+        mask01 = ((torch.arange(c)).cuda() >= label).float()*mask
         entropy = safe_log(pred) * mask10 + safe_log(1 - pred) * mask01
+        
+            
         return -entropy
 
 def NormalDist(x, sigma):
