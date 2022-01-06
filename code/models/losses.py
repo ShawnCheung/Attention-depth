@@ -141,7 +141,6 @@ class _BaseEntropyLoss2d(nn.Module):
             loss = torch.sum(weighted_entropy, -1)[mask].mean()
         elif self.reduction == 'mean':
             loss = torch.mean(weighted_entropy, -1)[mask].mean()
-        print(loss)
         
         return loss
 
